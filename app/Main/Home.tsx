@@ -90,31 +90,46 @@ export default function Home() {
         mode="picture"
         zoom={0}
       />
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-          <RefreshCcw color={"white"} />
-        </TouchableOpacity>
-        {facing === "back" && (
-          <TouchableOpacity style={styles.button} onPress={toggleFlashlight}>
-            {flashlightOn ? (
-              <FlashlightOff color={"white"} />
-            ) : (
-              <Flashlight color={"white"} />
-            )}
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/Main/History")}
-        >
-          <HistoryIcon color={"white"} />
-        </TouchableOpacity>
 
+      <View className="absolute bottom-0 w-full flex flex-col  justify-center items-center gap-5">
+        <View className="flex flex-row gap-5">
+          <TouchableOpacity
+            className="flex items-center justify-center bg-slate-700 p-3 rounded-full"
+            onPress={toggleCameraFacing}
+          >
+            <RefreshCcw color={"white"} />
+          </TouchableOpacity>
+          {facing === "back" && (
+            <TouchableOpacity
+              className="flex items-center justify-center bg-slate-700 p-3 rounded-full"
+              onPress={toggleFlashlight}
+            >
+              {flashlightOn ? (
+                <FlashlightOff color={"white"} />
+              ) : (
+                <Flashlight color={"white"} />
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
+        <View className="bg-black/80 w-full">
+          <Text className="text-white text-center px-5 pb-safe-offset-2 pt-2">
+            Align the QR code within the frame to scan it automatically
+          </Text>
+        </View>
+      </View>
+      <View className="absolute top-safe-offset-1 right-0 flex flex-row justify-center items-center gap-3 p-5">
         <TouchableOpacity
-          style={styles.button}
+          className="flex items-center justify-center bg-slate-700 p-3 rounded-full"
           onPress={() => router.push("/Main/(CreateQr)/SelectQrType")}
         >
           <ScanQrCodeIcon color={"white"} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="flex items-center justify-center bg-slate-700 p-3 rounded-full"
+          onPress={() => router.push("/Main/History")}
+        >
+          <HistoryIcon color={"white"} />
         </TouchableOpacity>
       </View>
     </View>
@@ -133,15 +148,7 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
   },
-  buttonContainer: {
-    position: "absolute",
-    bottom: 64,
-    flexDirection: "row",
-    backgroundColor: "transparent",
-    width: "100%",
-    paddingHorizontal: 64,
-    justifyContent: "space-around",
-  },
+
   button: {
     alignItems: "center",
   },

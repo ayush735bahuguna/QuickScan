@@ -1,3 +1,5 @@
+import * as FileSystem from "expo-file-system";
+import * as MediaLibrary from "expo-media-library";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import {
   HistoryIcon,
@@ -12,6 +14,7 @@ import {
 } from "lucide-react-native";
 import React, { useRef, useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Pressable,
   ScrollView,
@@ -21,6 +24,7 @@ import {
   View,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import { captureRef } from "react-native-view-shot";
 
 const qrTypes = [
   { label: "text", icon: Type },
@@ -46,6 +50,51 @@ const CreateQrScreen = () => {
   });
 
   const qrRef = useRef<QRCode | null>(null);
+  const [format, setFormat] = useState("png");
+
+  const handleDownload = async () => {
+    try {
+      if (!inputData) {
+        Alert.alert("Enter some text first!");
+        return;
+      }
+
+      // const { status } = await MediaLibrary.requestPermissionsAsync(false, [
+      //   "photo",
+      // ]);
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission required", "Please allow gallery access");
+        return;
+      }
+
+      const uri = await captureRef(qrRef, {
+        format: format === "jpg" ? "jpg" : "png",
+        quality: 1,
+      });
+
+      let fileUri = uri;
+      let filename = `QRCode_${Date.now()}.${format}`;
+
+      // Convert to PDF if selected
+      if (format === "pdf") {
+        const pdfPath = FileSystem.Directory + filename;
+        await FileSystem.writeAsStringAsync(pdfPath, uri, {
+          encoding: "base64",
+        });
+        fileUri = pdfPath;
+      }
+
+      // Save to gallery
+      const asset = await MediaLibrary.createAssetAsync(fileUri);
+      await MediaLibrary.createAlbumAsync("QR Codes", asset, false);
+
+      Alert.alert("Saved!", `QR code saved as ${format.toUpperCase()}`);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Failed to save QR code.");
+    }
+  };
 
   const getQrValue = () => {
     switch (qrType) {
@@ -184,6 +233,7 @@ const CreateQrScreen = () => {
           },
         }}
       />
+
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="px-5 pt-10 bg-white mb-safe-offset-0">
           <View className="items-center mb-5 relative">
@@ -195,9 +245,23 @@ const CreateQrScreen = () => {
                 backgroundColor="#f9fafb"
                 getRef={(c) => (qrRef.current = c)}
               />
-              <TouchableOpacity className="bg-blue-600 p-3 rounded-full shadow-xl absolute -right-5 -bottom-5">
+              <TouchableOpacity
+                onPress={handleDownload}
+                className="bg-blue-600 p-3 rounded-full shadow-xl absolute -right-5 -bottom-5"
+              >
                 <ImageDown size={20} color="white" />
               </TouchableOpacity>
+            </View>
+
+            <View className="w-full mt-4 border border-gray-300 rounded-xl overflow-hidden">
+              {/* <Picker
+                selectedValue={format}
+                onValueChange={(value) => setFormat(value)}
+              >
+                <Picker.Item label="PNG" value="png" />
+                <Picker.Item label="JPG" value="jpg" />
+                <Picker.Item label="PDF" value="pdf" />
+              </Picker> */}
             </View>
 
             <View className="w-full mt-8 rounded-2xl p-4">

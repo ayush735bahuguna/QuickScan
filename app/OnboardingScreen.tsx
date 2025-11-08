@@ -1,10 +1,12 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { Layers, QrCode, Settings } from "lucide-react-native";
 import React from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function OnboardingScreen() {
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    await AsyncStorage.setItem("QuickScan_onBoarding", "true");
     router.replace("/Main/Home");
   };
   return (
