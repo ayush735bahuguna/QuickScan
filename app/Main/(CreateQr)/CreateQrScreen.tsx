@@ -1,4 +1,4 @@
-import { router, Stack } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import {
   HistoryIcon,
   ImageDown,
@@ -23,17 +23,17 @@ import {
 import QRCode from "react-native-qrcode-svg";
 
 const qrTypes = [
-  { label: "Text", icon: Type },
-  { label: "URL", icon: Link },
-  { label: "WiFi", icon: Wifi },
-  { label: "Email", icon: Mail },
-  { label: "Phone", icon: Phone },
-  { label: "SMS", icon: MessageSquare },
-  { label: "Contact", icon: User },
+  { label: "text", icon: Type },
+  { label: "url", icon: Link },
+  { label: "wifi", icon: Wifi },
+  { label: "email", icon: Mail },
+  { label: "phone", icon: Phone },
+  { label: "sms", icon: MessageSquare },
+  { label: "contact", icon: User },
 ];
 
-const CreateQr = () => {
-  const [selectedType, setSelectedType] = useState("Text");
+const CreateQrScreen = () => {
+  const { qrType } = useLocalSearchParams();
   const [inputData, setInputData] = useState({
     text: "",
     ssid: "",
@@ -48,18 +48,18 @@ const CreateQr = () => {
   const qrRef = useRef<QRCode | null>(null);
 
   const getQrValue = () => {
-    switch (selectedType) {
-      case "URL":
+    switch (qrType) {
+      case "url":
         return inputData.text || "https://example.com";
-      case "WiFi":
+      case "wifi":
         return `WIFI:T:${inputData.encryption};S:${inputData.ssid};P:${inputData.password};;`;
-      case "Email":
+      case "email":
         return `mailto:${inputData.email}`;
-      case "Phone":
+      case "phone":
         return `tel:${inputData.phone}`;
-      case "SMS":
+      case "sms":
         return `SMSTO:${inputData.phone}:${inputData.message}`;
-      case "Contact":
+      case "contact":
         return `BEGIN:VCARD\nFN:${inputData.name}\nTEL:${inputData.phone}\nEMAIL:${inputData.email}\nEND:VCARD`;
       default:
         return inputData.text || "Hello QR!";
@@ -67,8 +67,8 @@ const CreateQr = () => {
   };
 
   const renderInputs = () => {
-    switch (selectedType) {
-      case "WiFi":
+    switch (qrType) {
+      case "wifi":
         return (
           <>
             <TextInput
@@ -94,7 +94,7 @@ const CreateQr = () => {
             />
           </>
         );
-      case "Email":
+      case "email":
         return (
           <TextInput
             placeholder="Enter Email"
@@ -104,7 +104,7 @@ const CreateQr = () => {
             keyboardType="email-address"
           />
         );
-      case "Phone":
+      case "phone":
         return (
           <TextInput
             placeholder="Enter Phone Number"
@@ -114,7 +114,7 @@ const CreateQr = () => {
             keyboardType="phone-pad"
           />
         );
-      case "SMS":
+      case "sms":
         return (
           <>
             <TextInput
@@ -132,7 +132,7 @@ const CreateQr = () => {
             />
           </>
         );
-      case "Contact":
+      case "contact":
         return (
           <>
             <TextInput
@@ -177,7 +177,7 @@ const CreateQr = () => {
         options={{
           headerRight: () => {
             return (
-              <Pressable onPress={() => router.push("/History")}>
+              <Pressable onPress={() => router.push("/Main/History")}>
                 <HistoryIcon />
               </Pressable>
             );
@@ -187,15 +187,15 @@ const CreateQr = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="px-5 pt-10 bg-white mb-safe-offset-0">
           <View className="items-center mb-5 relative">
-            <View className="p-4 bg-gray-100 shadow-lg rounded-lg">
+            <View className="p-4 bg-gray-50 shadow-lg rounded-lg">
               <QRCode
                 value={getQrValue()}
                 size={200}
                 color="black"
-                backgroundColor="#f3f4f6"
+                backgroundColor="#f9fafb"
                 getRef={(c) => (qrRef.current = c)}
               />
-              <TouchableOpacity className="bg-blue-600 p-3 rounded-full shadow-lg absolute -right-5 -bottom-5">
+              <TouchableOpacity className="bg-blue-600 p-3 rounded-full shadow-xl absolute -right-5 -bottom-5">
                 <ImageDown size={20} color="white" />
               </TouchableOpacity>
             </View>
@@ -203,46 +203,16 @@ const CreateQr = () => {
             <View className="w-full mt-8 rounded-2xl p-4">
               <View className="flex-row items-center mb-3">
                 {React.createElement(
-                  qrTypes.find((t) => t.label === selectedType)?.icon || Type,
+                  qrTypes.find((t) => t.label === qrType)?.icon || Type,
                   { size: 22, color: "#2563eb" }
                 )}
                 <Text className="ml-2 text-base font-semibold text-gray-800">
-                  {selectedType} QR
+                  {qrType} QR
                 </Text>
               </View>
 
-              {/* Dynamic Inputs */}
               {renderInputs()}
             </View>
-          </View>
-
-          <Text className="text-base font-semibold mb-2 text-gray-800">
-            Select Type
-          </Text>
-          <View className="flex-row flex-wrap mb-4">
-            {qrTypes.map((type) => (
-              <TouchableOpacity
-                key={type.label}
-                className={`flex-row items-center px-4 py-2 rounded-full border mb-2 mr-2 ${
-                  selectedType === type.label
-                    ? "bg-blue-600 border-blue-600"
-                    : "border-blue-400"
-                }`}
-                onPress={() => setSelectedType(type.label)}
-              >
-                <type.icon
-                  size={16}
-                  color={selectedType === type.label ? "white" : "#2563eb"}
-                />
-                <Text
-                  className={`ml-1 text-sm font-medium ${
-                    selectedType === type.label ? "text-white" : "text-blue-600"
-                  }`}
-                >
-                  {type.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
           </View>
         </View>
       </ScrollView>
@@ -250,4 +220,4 @@ const CreateQr = () => {
   );
 };
 
-export default CreateQr;
+export default CreateQrScreen;
